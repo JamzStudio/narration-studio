@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#faf5ff">
+  <meta name="description" content="Narration Studio از Jamz Dev؛ ابزار ساخت نریشن با صدای قابل تنظیم.">
+  <title>Narration Studio — Jamz Dev</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="auth-locked">
+  <a class="skip-link" href="#workspace">برو به بخش ساخت نریشن</a>
+  <section id="authGate" class="auth-gate" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 14v-4M8 17V7m4 13V4m4 13V7m4 7v-4"/></svg></span>
+        <span><strong>Jamz Dev</strong><small>Narration Studio</small></span>
+      </div>
+      <div id="accountStep">
+        <span class="eyebrow">ورود امن به استودیو</span>
+        <h2 id="authTitle">اول حسابت رو بساز</h2>
+        <p>ایمیل و شماره‌ات رو وارد کن. یه کد ۶ رقمی به ایمیلت می‌فرستیم.</p>
+        <form id="accountForm">
+          <div class="field"><label for="authEmail">ایمیل</label><input id="authEmail" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com"></div>
+          <div class="field"><label for="authPhone">شماره تلفن با کد کشور</label><input id="authPhone" type="tel" autocomplete="tel" inputmode="tel" required dir="ltr" placeholder="+989121234567" pattern="^\+[1-9][0-9]{7,14}$"><small>مثلاً برای ایران: +989121234567</small></div>
+          <label class="check-row required-check"><input id="privacyConsent" type="checkbox" required><span><a href="./privacy.html" target="_blank">قوانین حریم خصوصی</a> رو خوندم و با ساخت حساب موافقم.</span></label>
+          <fieldset class="marketing-consent"><legend>اگر دوست داری از خبرها و پیشنهادها باخبرت کنیم:</legend>
+            <label class="check-row"><input id="emailMarketing" type="checkbox"><span>با ایمیل برام بفرستین.</span></label>
+            <label class="check-row"><input id="smsMarketing" type="checkbox"><span>با پیامک برام بفرستین.</span></label>
+            <small>این دوتا اختیاری‌ان و هر وقت بخوای می‌تونی لغوشون کنی.</small>
+          </fieldset>
+          <button id="sendCode" class="primary auth-primary" type="submit"><span>کد رو بفرست</span><span aria-hidden="true">←</span></button>
+        </form>
+      </div>
+      <div id="otpStep" class="hidden">
+        <span class="eyebrow">تأیید ایمیل</span><h2>کد رو وارد کن</h2>
+        <p id="otpHint">کد ۶ رقمی به ایمیلت فرستاده شد.</p>
+        <form id="otpForm"><div class="field"><label for="otpCode">کد تأیید</label><input id="otpCode" class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="123456"></div>
+          <button id="verifyCode" class="primary auth-primary" type="submit"><span>تأیید و ورود</span><span aria-hidden="true">←</span></button>
+          <button id="changeEmail" class="auth-link" type="button">ایمیل یا شماره رو عوض کن</button>
+        </form>
+      </div>
+      <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+  <main class="app-shell">
+    <nav class="topbar" aria-label="نوار اصلی">
+      <a class="brand" href="./" aria-label="Narration Studio از Jamz Dev، صفحه اصلی">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 14v-4M8 17V7m4 13V4m4 13V7m4 7v-4"/></svg>
+        </span>
+        <span><strong>Jamz Dev</strong><small>Narration Studio</small></span>
+      </a>
+      <div class="topbar-meta">
+        <span class="status-badge"><i aria-hidden="true"></i> آماده‌ست</span>
+        <span id="quotaBadge" class="version-badge">امروز ۱ خروجی رایگان داری</span>
+        <button id="signOut" class="sign-out hidden" type="button">خروج</button>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div>
+        <span class="eyebrow">JAMZ DEV · NARRATION STUDIO</span>
+        <h1>داستانت را بنویس،<br><em>اجرا را به راوی بسپار.</em></h1>
+      </div>
+      <p>متن کامل ویدئوی لانگت رو وارد کن، صدا و ریتم راوی رو همون‌طور که دوست داری تنظیم کن و روزی یک فایل WAV رایگان بگیر.</p>
+    </header>
+
+    <div id="workspace" class="workspace">
+      <section class="card settings-card" aria-labelledby="voice-settings-title">
+        <div class="section-heading">
+          <span class="step">۰۱</span>
+          <div><h2 id="voice-settings-title">تنظیم صدای راوی</h2><p>صداش رو همون‌طوری که می‌خوای تنظیم کن</p></div>
+        </div>
+
+        <div class="field">
+          <label for="language">زبان و لهجه نریشن</label>
+          <select id="language">
+            <option value="auto">تشخیص خودکار از روی متن</option>
+            <optgroup label="پراستفاده">
+              <option value="en-US" selected>انگلیسی — آمریکایی</option>
+              <option value="en-GB">انگلیسی — بریتانیایی</option>
+              <option value="fa">فارسی — ایرانی</option>
+              <option value="ar">عربی</option><option value="es">اسپانیایی</option>
+              <option value="fr">فرانسوی</option><option value="de">آلمانی</option>
+            </optgroup>
+            <optgroup label="سایر زبان‌ها">
+              <option value="it">ایتالیایی</option><option value="pt">پرتغالی</option>
+              <option value="ru">روسی</option><option value="tr">ترکی</option>
+              <option value="hi">هندی</option><option value="ur">اردو</option>
+              <option value="cmn">چینی ماندارین</option><option value="ja">ژاپنی</option>
+              <option value="ko">کره‌ای</option><option value="nl">هلندی</option>
+              <option value="pl">لهستانی</option><option value="uk">اوکراینی</option>
+              <option value="he">عبری</option><option value="id">اندونزیایی</option>
+              <option value="vi">ویتنامی</option><option value="th">تایلندی</option>
+              <option value="sv">سوئدی</option><option value="da">دانمارکی</option>
+              <option value="fi">فنلاندی</option><option value="nb">نروژی</option>
+              <option value="el">یونانی</option><option value="ro">رومانیایی</option>
+              <option value="bn">بنگالی</option><option value="pa">پنجابی</option>
+              <option value="ps">پشتو</option><option value="az">آذربایجانی</option>
+              <option value="hy">ارمنی</option><option value="ka">گرجی</option>
+              <option value="ms">مالایی</option><option value="fil">فیلیپینی</option>
+              <option value="sw">سواحیلی</option>
+            </optgroup>
+          </select>
+          <small id="languageHint">زبان متن رو انتخاب کن تا تلفظ و آهنگ جمله‌ها طبیعی‌تر بشه.</small>
+        </div>
+
+        <div class="two-fields">
+          <div class="field">
+            <label for="gender">جنسیت راوی</label>
+            <select id="gender"><option value="female">زن</option><option value="male" selected>مرد</option></select>
+          </div>
+          <div class="field">
+            <label for="age">سن حدودی: <output id="ageValue" for="age">۳۵</output></label>
+            <input id="age" type="range" min="18" max="75" value="35" step="1">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="speed">سرعت صحبت <output id="speedValue" for="speed">۱٫۰۰×</output></label>
+          <div class="range-wrap">
+            <span>آرام</span><input id="speed" type="range" min="0.70" max="1.30" value="1.00" step="0.05"><span>سریع</span>
+          </div>
+          <small>برای قصه گفتن، سرعت ۰٫۹۰× تا ۱٫۰۰× معمولاً طبیعی‌تر درمیاد.</small>
+        </div>
+
+        <div class="field">
+          <label for="voice">صدای راوی</label>
+          <select id="voice"></select>
+          <small>بر اساس سن و جنسیتی که انتخاب کردی، مناسب‌ترین صداها رو نشونت می‌دیم.</small>
+        </div>
+
+        <details class="advanced-settings">
+          <summary>
+            <span>تنظیمات بیشتر برای اجرا</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="advanced-content">
+            <label for="direction">حال‌وهوای اجرا</label>
+            <textarea id="direction" rows="5" dir="ltr">A warm, clear cinematic storyteller. Calm, intelligent, intimate, and emotionally present. Use a measured pace, subtle emotion, crisp pronunciation, and meaningful pauses. Draw the listener into the story without sounding theatrical or promotional.</textarea>
+            <small id="directionHint">خیلی ساده بگو دوست داری راوی با چه حس و ریتمی بخونه.</small>
+          </div>
+        </details>
+      </section>
+
+      <section class="card script-card" aria-labelledby="script-title">
+        <div class="section-heading script-title-row">
+          <span class="step">۰۲</span>
+          <div><h2 id="script-title">متن و خروجی</h2><p>کل داستان رو یک‌جا اینجا بذار</p></div>
+          <span id="counter" class="counter">۰ کاراکتر</span>
+        </div>
+
+        <div class="script-editor">
+          <label class="sr-only" for="script">اسکریپت نریشن</label>
+          <textarea id="script" class="script" rows="20" placeholder="کل متن ویدئوی لانگت رو اینجا بذار…&#10;&#10;برای مکث‌های طبیعی از نقطه و خط جدید استفاده کن. اسم‌های خاص رو دقیق و خوانا بنویس."></textarea>
+          <div class="editor-footer">
+            <span><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M12 3v18m-4-4 4 4 4-4M5 7a7 7 0 0 1 14 0"/></svg>یک فایل یک‌تکه و آماده تدوین می‌گیری</span>
+            <span>WAV · 24 kHz</span>
+          </div>
+        </div>
+
+        <button id="generate" class="primary" type="button">
+          <span class="button-label"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h2m3-5v10m4-13v16m4-11v6m-6 7v-2"/></svg>صداشو بساز</span>
+          <svg class="arrow-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+        </button>
+        <p class="privacy-note">از هر اینترنت، روزی یه خروجی می‌شه گرفت. IP اصلیت رو ذخیره نمی‌کنیم؛ فقط کد ناشناسش حداکثر دو روز برای کنترل سهمیه می‌مونه.</p>
+
+        <div id="status" class="status hidden" aria-live="polite">
+          <div class="status-line"><span id="statusText">داریم آماده‌اش می‌کنیم…</span><span id="statusPercent">۰٪</span></div>
+          <div class="progress" role="progressbar" aria-label="پیشرفت ساخت صوت"><i id="progressBar"></i></div>
+        </div>
+
+        <div id="result" class="result hidden">
+          <div class="result-head">
+            <span class="result-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6"/></svg></span>
+            <div><strong>نریشنت آماده‌ست</strong><span id="resultMeta"></span></div>
+            <a id="download" class="download" download><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m-4-4 4 4 4-4M5 21h14"/></svg>دانلود WAV</a>
+          </div>
+          <audio id="player" controls></audio>
+        </div>
+      </section>
+    </div>
+
+    <footer><span>Narration Studio · by Jamz Dev</span><span>Secure cloud processing · Privacy-conscious</span></footer>
+  </main>
+  <script src="./config.js"></script>
+  <script src="./auth.js" type="module"></script>
+  <script src="./app.js" type="module"></script>
+</body>
+</html>
