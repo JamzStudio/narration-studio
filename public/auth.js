@@ -4,6 +4,13 @@ const configured = !String(window.SUPABASE_URL).includes("YOUR_PROJECT")
   && !String(window.SUPABASE_PUBLISHABLE_KEY).includes("YOUR_SUPABASE");
 const supabase = configured ? createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY) : null;
 let pendingProfile = null;
+const OTP_TTL_MS = 10 * 60 * 1000;
+const RESEND_DELAY_MS = 60 * 1000;
+let otpExpiresAt = 0;
+let resendAvailableAt = 0;
+let otpClock = null;
+let resendBusy = false;
+let expiryAnnounced = false;
 
 const $ = (id) => document.getElementById(id);
 const message = (text, error = false) => {
@@ -11,6 +18,43 @@ const message = (text, error = false) => {
   $("authMessage").classList.toggle("is-error", error);
 };
 const busy = (button, value) => { button.disabled = value; button.setAttribute("aria-busy", String(value)); };
+const faTwoDigits = new Intl.NumberFormat("fa-IR", { minimumIntegerDigits: 2, useGrouping: false });
+const formatCountdown = (milliseconds) => {
+  const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  return `${faTwoDigits.format(Math.floor(seconds / 60))}:${faTwoDigits.format(seconds % 60)}`;
+};
+const stopOtpClock = () => {
+  if (otpClock) clearInterval(otpClock);
+  otpClock = null;
+};
+const renderOtpClock = () => {
+  const now = Date.now();
+  const otpRemaining = otpExpiresAt - now;
+  const resendRemaining = resendAvailableAt - now;
+  const expired = otpRemaining <= 0;
+  $("otpTimer").textContent = expired ? "زمان کد تموم شده" : `اعتبار کد: ${formatCountdown(otpRemaining)}`;
+  $("otpTimer").classList.toggle("is-expired", expired);
+  $("resendTimer").textContent = resendRemaining > 0
+    ? `ارسال مجدد تا ${formatCountdown(resendRemaining)}`
+    : "می‌تونی کد جدید بگیری";
+  $("resendCode").disabled = resendBusy || resendRemaining > 0;
+  if (expired && !expiryAnnounced) {
+    expiryAnnounced = true;
+    message("زمان کد تموم شد؛ روی «ارسال مجدد کد» بزن.", true);
+  }
+};
+const startOtpClock = () => {
+  const now = Date.now();
+  otpExpiresAt = now + OTP_TTL_MS;
+  resendAvailableAt = now + RESEND_DELAY_MS;
+  expiryAnnounced = false;
+  $("otpCode").value = "";
+  $("otpCode").setCustomValidity("");
+  $("otpCode").removeAttribute("aria-invalid");
+  stopOtpClock();
+  renderOtpClock();
+  otpClock = setInterval(renderOtpClock, 1000);
+};
 const toLatinDigits = (value) => String(value)
   .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
   .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
@@ -105,7 +149,8 @@ $("accountForm").addEventListener("submit", async (event) => {
   if (error) return message("کد فرستاده نشد. ایمیل رو بررسی کن و دوباره امتحان کن.", true);
   $("accountStep").classList.add("hidden");
   $("otpStep").classList.remove("hidden");
-  $("otpHint").textContent = `کد ۶ رقمی رو به ${email} فرستادیم.`;
+  $("otpHint").textContent = `کد ۶ رقمی رو به ${email} فرستادیم؛ ۱۰ دقیقه اعتبار داره.`;
+  startOtpClock();
   $("otpCode").focus();
   message("");
 });
@@ -118,12 +163,48 @@ $("authPhone").addEventListener("input", () => {
 $("authPhone").addEventListener("blur", () => normalizedPhone(true));
 updatePhoneCountry();
 
+$("otpCode").addEventListener("input", () => {
+  $("otpCode").value = toLatinDigits($("otpCode").value).replace(/\D/g, "").slice(0, 6);
+  $("otpCode").setCustomValidity("");
+  $("otpCode").removeAttribute("aria-invalid");
+});
+
+$("resendCode").addEventListener("click", async () => {
+  if (!supabase || !pendingProfile || Date.now() < resendAvailableAt || resendBusy) return;
+  resendBusy = true;
+  renderOtpClock();
+  busy($("resendCode"), true);
+  message("داریم یه کد جدید می‌فرستیم…");
+  const { error } = await supabase.auth.signInWithOtp({
+    email: pendingProfile.email,
+    options: { shouldCreateUser: true }
+  });
+  resendBusy = false;
+  busy($("resendCode"), false);
+  if (error) {
+    renderOtpClock();
+    return message("کد جدید فرستاده نشد؛ یک دقیقه دیگه دوباره امتحان کن.", true);
+  }
+  startOtpClock();
+  $("otpHint").textContent = `کد جدید رو به ${pendingProfile.email} فرستادیم؛ ۱۰ دقیقه اعتبار داره.`;
+  $("otpCode").focus();
+  message("کد جدید فرستاده شد.");
+});
+
 $("otpForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!supabase || !pendingProfile) return message("اول ایمیل و شماره‌ات رو وارد کن.", true);
+  if (Date.now() >= otpExpiresAt) return message("زمان این کد تموم شده؛ کد جدید بگیر.", true);
+  const token = toLatinDigits($("otpCode").value).replace(/\D/g, "");
+  if (token.length !== 6) {
+    $("otpCode").setCustomValidity("کد ۶ رقمی رو کامل وارد کن.");
+    $("otpCode").setAttribute("aria-invalid", "true");
+    $("otpCode").reportValidity();
+    return;
+  }
   busy($("verifyCode"), true);
   message("داریم کد رو بررسی می‌کنیم…");
-  const { data, error } = await supabase.auth.verifyOtp({ email: pendingProfile.email, token: $("otpCode").value.trim(), type: "email" });
+  const { data, error } = await supabase.auth.verifyOtp({ email: pendingProfile.email, token, type: "email" });
   if (error || !data.user) { busy($("verifyCode"), false); return message("کد درست نیست یا زمانش گذشته. دوباره امتحان کن.", true); }
   const now = new Date().toISOString();
   const profile = { id: data.user.id, ...pendingProfile, privacy_accepted_at: now, consent_version: "2026-08-22-v1", updated_at: now };
@@ -134,10 +215,12 @@ $("otpForm").addEventListener("submit", async (event) => {
   });
   busy($("verifyCode"), false);
   if (profileError || consentError) return message("حسابت تأیید شد، ولی اطلاعات تماس ذخیره نشد. با پشتیبانی تماس بگیر.", true);
+  stopOtpClock();
   unlock(data.session);
 });
 
 $("changeEmail").addEventListener("click", () => {
+  stopOtpClock();
   $("otpStep").classList.add("hidden"); $("accountStep").classList.remove("hidden"); message("");
 });
 $("signOut").addEventListener("click", async () => { if (supabase) await supabase.auth.signOut(); location.reload(); });

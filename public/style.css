@@ -54,8 +54,15 @@ body::after {
 .auth-primary { min-height:50px; margin-top:18px; }
 .auth-link,.sign-out { min-height:40px; padding:0 10px; border:0; background:transparent; color:var(--color-primary); cursor:pointer; font:700 11px "Vazirmatn",sans-serif; }
 .auth-link { width:100%; margin-top:9px; }
+.auth-link:disabled { opacity:.5; cursor:not-allowed; }
 .sign-out { border:1px solid rgba(124,58,237,.16); border-radius:var(--radius-pill); background:rgba(255,255,255,.68); }
 .otp-input { direction:ltr; text-align:center; font:700 22px "Inter",sans-serif; letter-spacing:.28em; }
+.otp-input[aria-invalid="true"] { border-color:#b42318; }
+.otp-status { min-height:44px; margin-top:-7px; padding:9px 12px; display:flex; align-items:center; justify-content:space-between; gap:var(--space-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-muted); color:var(--color-muted-foreground); font-size:10px; font-weight:600; }
+.otp-status span { white-space:nowrap; }
+.otp-status .is-expired { color:#b42318; }
+.resend-code { min-height:44px; border:1px solid rgba(124,58,237,.15); border-radius:var(--radius-sm); transition:background var(--transition),color var(--transition),opacity var(--transition); }
+.resend-code:not(:disabled):hover { background:#f0eafd; }
 .auth-message { min-height:22px; margin:16px 0 0; color:var(--color-success); font-size:11px; line-height:1.7; }
 .auth-message.is-error { color:#b42318; }
 
@@ -187,6 +194,7 @@ footer { min-height:70px; padding:24px 4px 0; display:flex; justify-content:spac
 @media (max-width:600px) {
   .auth-gate { align-items:start; padding-top:12px; }
   .auth-card { padding:22px 18px; border-radius:var(--radius-md); }
+  .otp-status { align-items:flex-start; flex-direction:column; gap:2px; }
   .phone-control { grid-template-columns:minmax(137px,.95fr) minmax(0,1.05fr); }
   #phoneCountry { font-size:10px; }
   .app-shell { width:calc(100% - 24px); padding-top:12px; }

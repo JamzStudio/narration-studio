@@ -107,8 +107,18 @@
       <div id="otpStep" class="hidden">
         <span class="eyebrow">تأیید ایمیل</span><h2>کد رو وارد کن</h2>
         <p id="otpHint">کد ۶ رقمی به ایمیلت فرستاده شد.</p>
-        <form id="otpForm"><div class="field"><label for="otpCode">کد تأیید</label><input id="otpCode" class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="123456"></div>
+        <form id="otpForm">
+          <div class="field otp-field">
+            <label for="otpCode">کد ۶ رقمی رو تایپ کن</label>
+            <input id="otpCode" class="otp-input" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="۱۲۳۴۵۶" aria-describedby="otpHelp otpTimer">
+            <small id="otpHelp">کدی که به ایمیلت فرستادیم رو اینجا وارد کن.</small>
+          </div>
+          <div class="otp-status" aria-label="وضعیت کد تأیید">
+            <span id="otpTimer" role="timer">اعتبار کد: ۱۰:۰۰</span>
+            <span id="resendTimer">ارسال مجدد تا ۱:۰۰</span>
+          </div>
           <button id="verifyCode" class="primary auth-primary" type="submit"><span>تأیید و ورود</span><span aria-hidden="true">←</span></button>
+          <button id="resendCode" class="auth-link resend-code" type="button" disabled>ارسال مجدد کد</button>
           <button id="changeEmail" class="auth-link" type="button">ایمیل یا شماره رو عوض کن</button>
         </form>
       </div>
