@@ -6,6 +6,7 @@ const generate = $("generate");
 const status = $("status");
 const result = $("result");
 let quotaRemaining = 1;
+const LIVE_SITE_URL = "https://jamzstudio.github.io/narration-studio/";
 const API_BASE = String(window.NARRATION_API_BASE || "").replace(/\/$/, "");
 const apiUrl = (path) => `${API_BASE}${path}`;
 
@@ -83,6 +84,7 @@ script.addEventListener("input", () => {
 
 function setProgress(percent, message) {
   status.classList.remove("hidden");
+  $("liveSiteLink").classList.add("hidden");
   $("progressBar").style.width = `${percent}%`;
   $("progressBar").parentElement.setAttribute("aria-valuenow", String(Math.round(percent)));
   $("progressBar").parentElement.setAttribute("aria-valuemin", "0");
@@ -91,9 +93,36 @@ function setProgress(percent, message) {
   $("statusText").textContent = message;
 }
 
+function friendlyError(error) {
+  const errorText = String(error?.message || "");
+  if (window.location.protocol === "file:") {
+    return "این نسخه مستقیم از روی فایل باز شده و به سرور وصل نمی‌شه. سایت اصلی رو باز کن و همون‌جا دوباره امتحان کن.";
+  }
+  if (/failed to fetch|networkerror|load failed|network request failed/i.test(errorText)) {
+    return "به سرور وصل نشدیم. اینترنتت رو بررسی کن و چند لحظه دیگه دوباره امتحان کن.";
+  }
+  if (/timeout|timed out|aborted/i.test(errorText)) {
+    return "ارتباط با سرور زیادی طول کشید. یه بار دیگه امتحان کن.";
+  }
+  if (/quota storage|reservation expired/i.test(errorText)) {
+    return "فعلاً نتونستیم سهمیه امروزت رو بررسی کنیم. چند لحظه دیگه دوباره امتحان کن.";
+  }
+  return errorText || "یه مشکلی پیش اومد. دوباره امتحان کن.";
+}
+
+function showLiveSiteHelp() {
+  setProgress(0, friendlyError(new Error("local file")));
+  $("liveSiteLink").href = LIVE_SITE_URL;
+  $("liveSiteLink").classList.remove("hidden");
+}
+
 generate.addEventListener("click", async () => {
   if (!script.value.trim()) {
     setProgress(0, "اول متن نریشنت رو وارد کن.");
+    return;
+  }
+  if (window.location.protocol === "file:") {
+    showLiveSiteHelp();
     return;
   }
   generate.disabled = true;
@@ -149,7 +178,7 @@ generate.addEventListener("click", async () => {
       if (done) break;
     }
   } catch (error) {
-    setProgress(0, error.message || "یه مشکلی پیش اومد. دوباره امتحان کن.");
+    setProgress(0, friendlyError(error));
   } finally {
     generate.disabled = quotaRemaining === 0;
     generate.removeAttribute("aria-busy");
