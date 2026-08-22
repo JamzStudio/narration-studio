@@ -149,7 +149,7 @@ $("accountForm").addEventListener("submit", async (event) => {
   if (error) return message("کد فرستاده نشد. ایمیل رو بررسی کن و دوباره امتحان کن.", true);
   $("accountStep").classList.add("hidden");
   $("otpStep").classList.remove("hidden");
-  $("otpHint").textContent = `کد ۶ رقمی رو به ${email} فرستادیم؛ ۱۰ دقیقه اعتبار داره.`;
+  $("otpHint").textContent = `کد ۶ رقمی رو به ${email} فرستادیم؛ ۱۰ دقیقه اعتبار داره. فقط همین ایمیل آخری رو باز کن.`;
   startOtpClock();
   $("otpCode").focus();
   message("");
@@ -186,7 +186,7 @@ $("resendCode").addEventListener("click", async () => {
     return message("کد جدید فرستاده نشد؛ یک دقیقه دیگه دوباره امتحان کن.", true);
   }
   startOtpClock();
-  $("otpHint").textContent = `کد جدید رو به ${pendingProfile.email} فرستادیم؛ ۱۰ دقیقه اعتبار داره.`;
+  $("otpHint").textContent = `کد جدید رو به ${pendingProfile.email} فرستادیم؛ فقط کد همین ایمیل آخری معتبره.`;
   $("otpCode").focus();
   message("کد جدید فرستاده شد.");
 });
@@ -205,7 +205,13 @@ $("otpForm").addEventListener("submit", async (event) => {
   busy($("verifyCode"), true);
   message("داریم کد رو بررسی می‌کنیم…");
   const { data, error } = await supabase.auth.verifyOtp({ email: pendingProfile.email, token, type: "email" });
-  if (error || !data.user) { busy($("verifyCode"), false); return message("کد درست نیست یا زمانش گذشته. دوباره امتحان کن.", true); }
+  if (error || !data.user) {
+    busy($("verifyCode"), false);
+    $("otpCode").value = "";
+    $("otpCode").setAttribute("aria-invalid", "true");
+    $("otpCode").focus();
+    return message("این کد معتبر نیست؛ فقط کد آخرین ایمیل رو وارد کن یا «ارسال مجدد کد» رو بزن.", true);
+  }
   const now = new Date().toISOString();
   const profile = { id: data.user.id, ...pendingProfile, privacy_accepted_at: now, consent_version: "2026-08-22-v1", updated_at: now };
   const { error: profileError } = await supabase.from("profiles").upsert(profile);
