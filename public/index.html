@@ -22,7 +22,79 @@
         <p>ایمیل و شماره‌ات رو وارد کن. یه کد ۶ رقمی به ایمیلت می‌فرستیم.</p>
         <form id="accountForm">
           <div class="field"><label for="authEmail">ایمیل</label><input id="authEmail" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com"></div>
-          <div class="field"><label for="authPhone">شماره تلفن با کد کشور</label><input id="authPhone" type="tel" autocomplete="tel" inputmode="tel" required dir="ltr" placeholder="+989121234567" pattern="^\+[1-9][0-9]{7,14}$"><small>مثلاً برای ایران: +989121234567</small></div>
+          <div class="field phone-field">
+            <label for="authPhone">شماره تلفن</label>
+            <div class="phone-control">
+              <select id="phoneCountry" aria-label="کشور و پیش‌شماره تلفن">
+                <option value="+98" data-example="912 123 4567" data-min="10" data-max="10" selected>🇮🇷 ایران (+98)</option>
+                <option value="+93" data-example="70 123 4567">🇦🇫 افغانستان (+93)</option>
+                <option value="+964" data-example="790 123 4567">🇮🇶 عراق (+964)</option>
+                <option value="+90" data-example="532 123 4567">🇹🇷 ترکیه (+90)</option>
+                <option value="+971" data-example="50 123 4567">🇦🇪 امارات (+971)</option>
+                <option value="+974" data-example="3312 3456">🇶🇦 قطر (+974)</option>
+                <option value="+965" data-example="500 12345">🇰🇼 کویت (+965)</option>
+                <option value="+968" data-example="9212 3456">🇴🇲 عمان (+968)</option>
+                <option value="+973" data-example="3600 1234">🇧🇭 بحرین (+973)</option>
+                <option value="+966" data-example="50 123 4567">🇸🇦 عربستان (+966)</option>
+                <option value="+962" data-example="7 9012 3456">🇯🇴 اردن (+962)</option>
+                <option value="+961" data-example="71 123 456">🇱🇧 لبنان (+961)</option>
+                <option value="+972" data-example="50 123 4567">🇮🇱 اسرائیل (+972)</option>
+                <option value="+92" data-example="300 1234567">🇵🇰 پاکستان (+92)</option>
+                <option value="+91" data-example="91234 56789">🇮🇳 هند (+91)</option>
+                <option value="+994" data-example="50 123 45 67">🇦🇿 آذربایجان (+994)</option>
+                <option value="+374" data-example="91 123456">🇦🇲 ارمنستان (+374)</option>
+                <option value="+995" data-example="555 12 34 56">🇬🇪 گرجستان (+995)</option>
+                <option value="+7" data-example="912 123 4567">🇷🇺 روسیه (+7)</option>
+                <option value="+1" data-example="202 555 0123" data-min="10" data-max="10">🇺🇸 آمریکا (+1)</option>
+                <option value="+1" data-example="416 555 0123" data-min="10" data-max="10">🇨🇦 کانادا (+1)</option>
+                <option value="+44" data-example="7700 900123">🇬🇧 بریتانیا (+44)</option>
+                <option value="+49" data-example="1512 3456789">🇩🇪 آلمان (+49)</option>
+                <option value="+33" data-example="6 12 34 56 78">🇫🇷 فرانسه (+33)</option>
+                <option value="+39" data-example="312 345 6789">🇮🇹 ایتالیا (+39)</option>
+                <option value="+34" data-example="612 345 678">🇪🇸 اسپانیا (+34)</option>
+                <option value="+351" data-example="912 345 678">🇵🇹 پرتغال (+351)</option>
+                <option value="+31" data-example="6 12345678">🇳🇱 هلند (+31)</option>
+                <option value="+32" data-example="470 12 34 56">🇧🇪 بلژیک (+32)</option>
+                <option value="+41" data-example="79 123 45 67">🇨🇭 سوئیس (+41)</option>
+                <option value="+43" data-example="664 123456">🇦🇹 اتریش (+43)</option>
+                <option value="+46" data-example="70 123 45 67">🇸🇪 سوئد (+46)</option>
+                <option value="+47" data-example="412 34 567">🇳🇴 نروژ (+47)</option>
+                <option value="+45" data-example="20 12 34 56">🇩🇰 دانمارک (+45)</option>
+                <option value="+358" data-example="40 123 4567">🇫🇮 فنلاند (+358)</option>
+                <option value="+48" data-example="512 345 678">🇵🇱 لهستان (+48)</option>
+                <option value="+380" data-example="50 123 4567">🇺🇦 اوکراین (+380)</option>
+                <option value="+40" data-example="712 345 678">🇷🇴 رومانی (+40)</option>
+                <option value="+30" data-example="691 234 5678">🇬🇷 یونان (+30)</option>
+                <option value="+86" data-example="131 2345 6789">🇨🇳 چین (+86)</option>
+                <option value="+81" data-example="90 1234 5678">🇯🇵 ژاپن (+81)</option>
+                <option value="+82" data-example="10 1234 5678">🇰🇷 کره جنوبی (+82)</option>
+                <option value="+62" data-example="812 3456 7890">🇮🇩 اندونزی (+62)</option>
+                <option value="+60" data-example="12 345 6789">🇲🇾 مالزی (+60)</option>
+                <option value="+65" data-example="8123 4567">🇸🇬 سنگاپور (+65)</option>
+                <option value="+66" data-example="81 234 5678">🇹🇭 تایلند (+66)</option>
+                <option value="+84" data-example="91 234 56 78">🇻🇳 ویتنام (+84)</option>
+                <option value="+63" data-example="917 123 4567">🇵🇭 فیلیپین (+63)</option>
+                <option value="+61" data-example="412 345 678">🇦🇺 استرالیا (+61)</option>
+                <option value="+64" data-example="21 123 4567">🇳🇿 نیوزیلند (+64)</option>
+                <option value="+20" data-example="100 123 4567">🇪🇬 مصر (+20)</option>
+                <option value="+212" data-example="612 345678">🇲🇦 مراکش (+212)</option>
+                <option value="+213" data-example="551 23 45 67">🇩🇿 الجزایر (+213)</option>
+                <option value="+216" data-example="20 123 456">🇹🇳 تونس (+216)</option>
+                <option value="+27" data-example="71 123 4567">🇿🇦 آفریقای جنوبی (+27)</option>
+                <option value="+234" data-example="802 123 4567">🇳🇬 نیجریه (+234)</option>
+                <option value="+254" data-example="712 123456">🇰🇪 کنیا (+254)</option>
+                <option value="+55" data-example="11 91234 5678">🇧🇷 برزیل (+55)</option>
+                <option value="+52" data-example="55 1234 5678">🇲🇽 مکزیک (+52)</option>
+                <option value="+54" data-example="9 11 2345 6789">🇦🇷 آرژانتین (+54)</option>
+              </select>
+              <div class="local-phone">
+                <span id="phonePrefix" aria-hidden="true">+98</span>
+                <input id="authPhone" type="tel" autocomplete="tel-national" inputmode="numeric" required dir="ltr" maxlength="18" placeholder="912 123 4567" aria-describedby="phoneHint phoneError">
+              </div>
+            </div>
+            <small id="phoneHint">پیش‌شماره +98 خودکار اضافه می‌شه؛ شماره رو بدون صفر اول بنویس.</small>
+            <small id="phoneError" class="field-error hidden" role="alert"></small>
+          </div>
           <label class="check-row required-check"><input id="privacyConsent" type="checkbox" required><span><a href="./privacy.html" target="_blank">قوانین حریم خصوصی</a> رو خوندم و با ساخت حساب موافقم.</span></label>
           <fieldset class="marketing-consent"><legend>اگر دوست داری از خبرها و پیشنهادها باخبرت کنیم:</legend>
             <label class="check-row"><input id="emailMarketing" type="checkbox"><span>با ایمیل برام بفرستین.</span></label>

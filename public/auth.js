@@ -11,6 +11,49 @@ const message = (text, error = false) => {
   $("authMessage").classList.toggle("is-error", error);
 };
 const busy = (button, value) => { button.disabled = value; button.setAttribute("aria-busy", String(value)); };
+const toLatinDigits = (value) => String(value)
+  .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+  .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+const clearPhoneError = () => {
+  $("authPhone").setCustomValidity("");
+  $("authPhone").removeAttribute("aria-invalid");
+  $("phoneError").textContent = "";
+  $("phoneError").classList.add("hidden");
+};
+const selectedCountry = () => $("phoneCountry").selectedOptions[0];
+const updatePhoneCountry = () => {
+  const option = selectedCountry();
+  $("phonePrefix").textContent = option.value;
+  $("authPhone").placeholder = option.dataset.example || "شماره تلفن";
+  $("phoneHint").textContent = `پیش‌شماره ${option.value} خودکار اضافه می‌شه؛ شماره رو بدون صفر اول بنویس.`;
+  clearPhoneError();
+};
+const normalizedPhone = (showError = false) => {
+  const input = $("authPhone");
+  const option = selectedCountry();
+  const prefixDigits = option.value.replace(/\D/g, "");
+  const localDigits = toLatinDigits(input.value).replace(/\D/g, "").replace(/^0+/, "");
+  const minimum = Number(option.dataset.min || Math.max(6, 8 - prefixDigits.length));
+  const maximum = Number(option.dataset.max || (15 - prefixDigits.length));
+  let error = "";
+  if (!localDigits) error = "ادامهٔ شماره تلفنت رو وارد کن.";
+  else if (localDigits.length < minimum || localDigits.length > maximum) {
+    error = `شماره رو بدون پیش‌شماره و صفر اول، بین ${minimum} تا ${maximum} رقم وارد کن.`;
+  }
+  const fullPhone = `${option.value}${localDigits}`;
+  if (!error && !/^\+[1-9][0-9]{7,14}$/.test(fullPhone)) error = "شماره تلفن کامل نیست؛ دوباره بررسیش کن.";
+  clearPhoneError();
+  if (error) {
+    input.setCustomValidity(error);
+    input.setAttribute("aria-invalid", "true");
+    if (showError) {
+      $("phoneError").textContent = error;
+      $("phoneError").classList.remove("hidden");
+    }
+    return null;
+  }
+  return fullPhone;
+};
 const unlock = (session) => {
   document.body.classList.toggle("auth-locked", !session);
   $("authGate").classList.toggle("hidden", Boolean(session));
@@ -44,7 +87,12 @@ $("accountForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!supabase) return message("ورود هنوز راه‌اندازی نشده.", true);
   const email = $("authEmail").value.trim().toLowerCase();
-  const phone = $("authPhone").value.trim();
+  const phone = normalizedPhone(true);
+  if (!phone) {
+    $("authPhone").focus();
+    $("authPhone").reportValidity();
+    return;
+  }
   pendingProfile = {
     email, phone,
     email_marketing_consent: $("emailMarketing").checked,
@@ -61,6 +109,14 @@ $("accountForm").addEventListener("submit", async (event) => {
   $("otpCode").focus();
   message("");
 });
+
+$("phoneCountry").addEventListener("change", updatePhoneCountry);
+$("authPhone").addEventListener("input", () => {
+  $("authPhone").value = toLatinDigits($("authPhone").value).replace(/[^0-9 ()-]/g, "");
+  clearPhoneError();
+});
+$("authPhone").addEventListener("blur", () => normalizedPhone(true));
+updatePhoneCountry();
 
 $("otpForm").addEventListener("submit", async (event) => {
   event.preventDefault();
