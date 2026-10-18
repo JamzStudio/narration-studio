@@ -8,6 +8,7 @@ const result = $("result");
 let quotaRemaining = 1;
 const LIVE_SITE_URL = "https://jamzstudio.github.io/narration-studio/";
 const API_BASE = String(window.NARRATION_API_BASE || "").replace(/\/$/, "");
+const PART_CHAR_TARGET = 6000;
 const apiUrl = (path) => `${API_BASE}${path}`;
 
 const voicePresets = {
@@ -78,9 +79,16 @@ updateSpeed();
 updateVoices();
 refreshQuota();
 
-script.addEventListener("input", () => {
-  $("counter").textContent = `${script.value.length.toLocaleString("fa-IR")} کاراکتر`;
-});
+function updateScriptCount() {
+  const characters = script.value.length;
+  const parts = characters ? Math.ceil(characters / PART_CHAR_TARGET) : 0;
+  $("counter").textContent = parts > 1
+    ? `${characters.toLocaleString("fa-IR")} کاراکتر · حدود ${parts.toLocaleString("fa-IR")} پارت`
+    : `${characters.toLocaleString("fa-IR")} کاراکتر`;
+}
+
+script.addEventListener("input", updateScriptCount);
+updateScriptCount();
 
 function setProgress(percent, message) {
   status.classList.remove("hidden");
@@ -157,7 +165,10 @@ generate.addEventListener("click", async () => {
       for (const line of lines) {
         if (!line.trim()) continue;
         const event = JSON.parse(line);
-        if (event.type === "progress") setProgress(8, event.message);
+        if (event.type === "progress") {
+          const percent = 5 + (Number(event.current) / Math.max(1, Number(event.total))) * 88;
+          setProgress(percent, event.message);
+        }
         if (event.type === "error") {
           if (event.code === "DAILY_LIMIT") renderQuota({ remaining: 0 });
           throw new Error(event.message);
